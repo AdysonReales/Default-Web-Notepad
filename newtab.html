@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Developer Notepad</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: #f4f4f9;
+      font-family: Arial, sans-serif;
+      color: #333;
+    }
+
+    /* Main application */
+    #app {
+      min-height: 100vh;
+      display: flex;
+      gap: 20px;
+      padding: 25px;
+    }
+
+    /* =========================
+       TODO SIDEBAR
+       ========================= */
+
+    #todo-section {
+      width: 320px;
+      min-width: 280px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
+      display: flex;
+      flex-direction: column;
+
+      overflow: hidden;
+    }
+
+    #todo-header {
+      height: 55px;
+      padding: 0 14px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      border-bottom: 1px solid #ddd;
+      background: #fafafa;
+    }
+
+    #todo-title {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    #add-todo {
+      width: 30px;
+      height: 30px;
+
+      border: none;
+      border-radius: 6px;
+
+      background: #35b84a;
+      color: white;
+
+      font-size: 22px;
+      line-height: 30px;
+
+      cursor: pointer;
+    }
+
+    #add-todo:hover {
+      background: #2ca13f;
+    }
+
+    #todo-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    /* =========================
+       TODO CARD
+       ========================= */
+
+    .todo-card {
+      position: relative;
+
+      padding: 10px;
+      margin-bottom: 8px;
+
+      border-radius: 5px;
+      border: 1px solid #ccc;
+
+      cursor: pointer;
+
+      transition: 0.15s;
+    }
+
+    .todo-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+    }
+
+    .todo-main {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .todo-checkbox {
+      margin-top: 2px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .todo-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .todo-title {
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .todo-description {
+      font-size: 11px;
+      color: #555;
+      line-height: 1.35;
+    }
+
+    .todo-card.completed .todo-title {
+      text-decoration: line-through;
+      opacity: 0.55;
+    }
+
+    .todo-card.completed .todo-description {
+      opacity: 0.5;
+    }
+
+    .delete-todo {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+
+      border: none;
+      background: transparent;
+
+      color: #888;
+      font-size: 12px;
+
+      cursor: pointer;
+      display: none;
+    }
+
+    .todo-card:hover .delete-todo {
+      display: block;
+    }
+
+    .delete-todo:hover {
+      color: #e33;
+    }
+
+    /* Different task colors */
+
+    .todo-card:nth-child(4n + 1) {
+      background: #fce5f5;
+      border-color: #e69bd0;
+    }
+
+    .todo-card:nth-child(4n + 2) {
+      background: #cfe3ff;
+      border-color: #8bb7ed;
+    }
+
+    .todo-card:nth-child(4n + 3) {
+      background: #dff5a8;
+      border-color: #9dca52;
+    }
+
+    .todo-card:nth-child(4n + 4) {
+      background: #d5f5eb;
+      border-color: #7ccdb3;
+    }
+
+    #empty-todo {
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      padding: 35px 15px;
+    }
+
+    /* =========================
+       STICKY NOTE
+       ========================= */
+
+    #note-card {
+      width: 450px;
+      height: 400px;
+
+      min-width: 250px;
+      min-height: 250px;
+
+      background-color: #fefabc;
+      border: 1px solid #e0d882;
+
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+      border-radius: 10px;
+
+      display: flex;
+      flex-direction: column;
+
+      resize: both;
+      overflow: hidden;
+    }
+
+    .note-header {
+      background-color: #f5e87a;
+      padding: 10px;
+
+      font-weight: bold;
+      color: #444;
+
+      font-size: 14px;
+    }
+
+    #note {
+      flex: 1;
+
+      border: none;
+      background: transparent;
+
+      padding: 12px;
+
+      resize: none;
+      outline: none;
+
+      font-size: 14px;
+      line-height: 1.5;
+
+      color: #333;
+    }
+
+    /* =========================
+       ADD TODO MODAL
+       ========================= */
+
+    #todo-modal {
+      position: fixed;
+      inset: 0;
+
+      background: rgba(0,0,0,0.35);
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      z-index: 100;
+    }
+
+    #todo-modal.show {
+      display: flex;
+    }
+
+    #todo-form {
+      width: 360px;
+
+      background: white;
+
+      border-radius: 10px;
+
+      padding: 20px;
+
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    #todo-form h2 {
+      margin: 0 0 15px;
+      font-size: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+
+      margin-bottom: 5px;
+    }
+
+    .form-input {
+      width: 100%;
+
+      border: 1px solid #ccc;
+      border-radius: 5px;
+
+      padding: 9px;
+
+      margin-bottom: 12px;
+
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: #6ca9e8;
+    }
+
+    #todo-description {
+      height: 80px;
+      resize: vertical;
+    }
+
+    .form-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .form-button {
+      border: none;
+      border-radius: 5px;
+
+      padding: 8px 14px;
+
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    #cancel-todo {
+      background: #eee;
+    }
+
+    #save-todo {
+      background: #35b84a;
+      color: white;
+    }
+
+    #save-todo:hover {
+      background: #2ca13f;
+    }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+      #app {
+        flex-direction: column;
+      }
+
+      #todo-section {
+        width: 100%;
+        height: 400px;
+      }
+
+      #note-card {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+
+    <!-- TODO LIST -->
+    <section id="todo-section">
+
+      <div id="todo-header">
+        <div id="todo-title">
+          To-do
+        </div>
+
+        <button id="add-todo">+</button>
+      </div>
+
+      <div id="todo-list">
+        <div id="empty-todo">
+          No tasks yet.<br>
+          Click + to add one.
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- STICKY NOTE -->
+    <div id="note-card">
+
+      <div class="note-header">
+        Sticky Note
+      </div>
+
+      <textarea
+        id="note"
+        placeholder="Type your notes here..."
+      ></textarea>
+
+    </div>
+
+  </div>
+
+
+  <!-- ADD TODO MODAL -->
+
+  <div id="todo-modal">
+
+    <div id="todo-form">
+
+      <h2>Add Task</h2>
+
+      <label class="form-label">
+        Title
+      </label>
+
+      <input
+        id="todo-title-input"
+        class="form-input"
+        type="text"
+        placeholder="e.g. Fix login system"
+      >
+
+      <label class="form-label">
+        Description
+      </label>
+
+      <textarea
+        id="todo-description"
+        class="form-input"
+        placeholder="What needs to be done?"
+      ></textarea>
+
+      <div class="form-buttons">
+
+        <button
+          id="cancel-todo"
+          class="form-button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="save-todo"
+          class="form-button"
+        >
+          Add Task
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script src="newtab.js"></script>
+
+</body>
+</html>
